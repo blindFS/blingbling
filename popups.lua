@@ -280,8 +280,48 @@ end
 
 -- }
 
+
+-- { Ip address
+local ipopup = nil
+local function get_ip( title_color, ip_color )
+    str=awful.util.pread("/home/farseer/bin/show_ip")
+    str=colorize(str,"LAN:", title_color)
+    str=colorize(str,"EXTERNAL:", title_color)
+    str=colorize(str,"[0-9.]%+", ip_color)
+    return str
+end
+
+local function hide_ip()
+    if ipopup ~= nil then
+        naughty.destroy(ipopup)
+        ipopup = nil
+    end
+end
+local function show_ip(c1,c2)
+    hide_ip()
+    ipopup=naughty.notify({
+        text = get_ip(c1,c2),
+        timeout = 0, hover_timeout = 0.5,
+    })
+end
+
+function ipstat(mywidget, args)
+    mywidget:connect_signal("mouse::enter", function()
+        show_ip( args["title_color"], args["ip_color"] )
+    end)
+    mywidget:connect_signal("mouse::leave", function()
+        hide_ip()
+    end)
+end
+
+-- }
+
+
 return {
     htop = htop ,
     netstat = netstat,
-    cpusensors = cpusensors, fstat = fstat }
+    cpusensors = cpusensors,
+    fstat = fstat,
+    ipstat = ipstat
+}
 -- vim:ts=4:sw=4:tw=0:ft=lua:fdm=marker:fdl=5
