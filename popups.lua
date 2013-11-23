@@ -53,6 +53,7 @@ local function show_process_info(inc_proc_offset, title_color,user_color, root_c
     processstats = colorize(processstats, "PRI", title_color)
     processstats = colorize(processstats, "STAT", title_color)
     processstats = colorize(processstats, "root", root_color)
+    processstats = colorize(processstats, "%d%d%.%d", root_color)
     processstats = colorize(processstats, os.getenv("USER"), user_color)
     processpopup = naughty.notify({
         text = processstats,
@@ -171,45 +172,8 @@ local function get_tempinfo( cpu_color, safe_color, high_color, crit_color)
     str=colorize(str,"high", high_color)
     str=colorize(str,"crit", crit_color)
     str=colorize(str,"off", crit_color)
-    str=colorize(str,"+[0-4]%d.%d°C", safe_color)
-    str=colorize(str,"+[5-7]%d.%d°C", high_color)
-    str=colorize(str,"+[8-9]%d.%d°C", crit_color)
-    return str
-end
-
-local function hide_tempinfo()
-    if temppopup ~= nil then
-        naughty.destroy(temppopup)
-        temppopup = nil
-    end
-end
-local function show_tempinfo(c1,c2,c3,c4)
-    hide_tempinfo()
-    temppopup=naughty.notify({
-        text = get_tempinfo(c1,c2,c3,c4),
-        timeout = 0, hover_timeout = 0.5,
-    })
-end
-
-function cpusensors(mywidget, args)
-    mywidget:connect_signal("mouse::enter", function()
-        show_tempinfo( args["cpu_color"], args["safe_color"], args["high_color"], args["crit_color"])
-    end)
-    mywidget:connect_signal("mouse::leave", function()
-        hide_tempinfo()
-    end)
-end
-
-local temppopup = nil
-local function get_tempinfo( cpu_color, safe_color, high_color, crit_color)
-    str=awful.util.pread("/home/farseer/bin/gpu_temp && sensors |grep Core|awk -F '(' '{print $1}'")
-    str=colorize(str,"Core %x", cpu_color)
-    str=colorize(str,"Gpu", cpu_color)
-    str=colorize(str,"high", high_color)
-    str=colorize(str,"crit", crit_color)
-    str=colorize(str,"off", crit_color)
-    str=colorize(str,"+[0-4]%d.%d°C", safe_color)
-    str=colorize(str,"+[5-7]%d.%d°C", high_color)
+    str=colorize(str,"+[0-5]%d.%d°C", safe_color)
+    str=colorize(str,"+[6-7]%d.%d°C", high_color)
     str=colorize(str,"+[8-9]%d.%d°C", crit_color)
     return str
 end
@@ -316,11 +280,47 @@ end
 
 -- }
 
+-- { cpu frequency
+local cpufreq = nil
+local function get_cpufreq( title_color, high_color ,low_color)
+    str=awful.util.pread("cat /proc/cpuinfo | grep MHz")
+    str=colorize(str, "cpu MHz", title_color)
+    str=colorize(str, "[1-2]%d%d%d.%d%d%d", low_color)
+    str=colorize(str, "[8-9]%d%d.%d%d%d", low_color)
+    str=colorize(str, "3%d%d%d.%d%d%d", high_color)
+    return str
+end
+
+local function hide_cpufreq()
+    if cfpopup ~= nil then
+        naughty.destroy(cfpopup)
+        cfpopup = nil
+    end
+end
+local function show_cpufreq(c1,c2,c3)
+    hide_ip()
+    cfpopup=naughty.notify({
+        text = get_cpufreq(c1,c2,c3),
+        timeout = 0, hover_timeout = 0.5,
+    })
+end
+
+function cpufreq(mywidget, args)
+    mywidget:connect_signal("mouse::enter", function()
+        show_cpufreq( args["title_color"], args["high_color"] ,args["low_color"])
+    end)
+    mywidget:connect_signal("mouse::leave", function()
+        hide_cpufreq()
+    end)
+end
+
+-- }
 
 return {
     htop = htop ,
     netstat = netstat,
     cpusensors = cpusensors,
+    cpufreq = cpufreq,
     fstat = fstat,
     ipstat = ipstat
 }
