@@ -169,14 +169,35 @@ local function add_focus(calendarbutton)
 						else		
 							apply_style(data[calendarbutton].month_days_cells[i].widget, data[calendarbutton].days_of_month_widget_style)
 						end
-						data[calendarbutton].info:set_text(os.date("%A %B %d %Y"))
+            local text_info = nil
+            if data[calendarbutton].default_info == nil then
+						  text_info = os.date("%A %B %d %Y")
+            end
+            if type(data[calendarbutton].default_info) == "string" then
+              text_info = data[calendarbutton].default_info
+            end
+            if type(data[calendarbutton].default_info) == "function" then
+              text_info = data[calendarbutton].default_info()
+            end
+            data[calendarbutton].info:set_text(text_info)
 					end
 				)
 			else
 				data[calendarbutton].month_days_cells[i].widget:connect_signal("mouse::leave", 
 					function() 
 						apply_style(data[calendarbutton].month_days_cells[i].widget, data[calendarbutton].days_of_month_widget_style) 
-						data[calendarbutton].info:set_text(os.date("%A %B %d %Y"))
+						local text_info = nil
+            if data[calendarbutton].default_info == nil then
+						  text_info = os.date("%A %B %d %Y")
+            end
+            if type(data[calendarbutton].default_info) == "string" then
+              text_info = data[calendarbutton].default_info
+            end
+            if type(data[calendarbutton].default_info) == "function" then
+              text_info = data[calendarbutton].default_info()
+            end
+            data[calendarbutton].info:set_text(text_info)
+            --data[calendarbutton].info:set_text(data[calendarbutton].default_info or os.date("%A %B %d %Y"))
 					end
 				)
 			end
@@ -228,7 +249,19 @@ local function fill_calendar(calendarbutton)
 	--TODO get the days events and mark them with a style modification
 	end
 	--set current date in the info panel
-	data[calendarbutton].info:set_text(os.date("%A %B %d %Y"))
+	local text_info = nil
+            if data[calendarbutton].default_info == nil then
+						  text_info = os.date("%A %B %d %Y")
+            end
+            if type(data[calendarbutton].default_info) == "string" then
+              text_info = data[calendarbutton].default_info
+            end
+            if type(data[calendarbutton].default_info) == "function" then
+              text_info = data[calendarbutton].default_info()
+            end
+
+           data[calendarbutton].info:set_text(text_info)
+--data[calendarbutton].info:set_text(data[calendarbutton].default_info or os.date("%A %B %d %Y"))
 end
 
 local function reload_and_fill(calendarbutton)
@@ -399,7 +432,19 @@ local function generate_calendar_box(calendarbutton)
 	end
 	data[calendarbutton].fullview = layout.flex.horizontal()
 	data[calendarbutton].info = text_box( data[calendarbutton].info_cell_style)
-	data[calendarbutton].info:set_text(os.date("%A %B %d %Y"))
+	local text_info = nil
+           if data[calendarbutton].default_info == nil then
+						  text_info = os.date("%A %B %d %Y")
+            end
+            if type(data[calendarbutton].default_info) == "string" then
+              text_info = data[calendarbutton].default_info
+            end
+            if type(data[calendarbutton].default_info) == "function" then
+              text_info = data[calendarbutton].default_info()
+            end
+
+--data[calendarbutton].info:set_text(os.date("%A %B %d %Y"))
+  data[calendarbutton].info:set_text(text_info)
 	data[calendarbutton].info:set_height((max_height + mt +mr) * 8 )
 	data[calendarbutton].info:set_width(math.ceil((max_width + ml + mr )* 8 ))
 	data[calendarbutton].fullview:add(data[calendarbutton].column)
@@ -422,8 +467,8 @@ local function show_wibox(wibox)
 	local x,y =0
 	y = mouse_coords.y < screen_geometry.y and screen_geometry.y or mouse_coords.y
 	x = mouse_coords.x < screen_geometry.x and screen_geometry.x or mouse_coords.x
-  y = y + wibox.height > screen_h and  screen_h - wibox.height or y 
-  x = x + wibox.width > screen_w and screen_w - wibox.width or x
+  y = y + wibox.height > ( screen_h - 10)and  screen_h - (wibox.height + 10) or y + 10 
+  x = x + wibox.width > ( screen_w - 10) and screen_w - ( wibox.width + 10) or x + 10
 	wibox:geometry({	--width = wibox.width, 
 										--height = wibox.height,
 										x = x ,
@@ -490,10 +535,14 @@ function set_locale(calendarbutton, locale)
 	end
 end
 
+function set_default_info(calendarbutton, text)
+  data[calendarbutton].default_info = text
+end
+
 function calendar.new(args)
 	local args = args or {}
  
-  local calendarbutton = awful.widget.textclock(" %a %b %d, %H:%M") 
+  local calendarbutton = args.widget or awful.widget.textclock(" %a %b %d, %H:%M") 
   data[calendarbutton] = {} 
 	--get days and month labels
 	if args.locale then
@@ -543,6 +592,7 @@ function calendar.new(args)
 	calendarbutton.clear_and_add_function_get_events_from = clear_and_add_function_get_events_from
 	calendarbutton.append_function_get_events_from =append_function_get_events_from
 	calendarbutton.set_locale = set_locale	
+	calendarbutton.set_default_info = set_default_info
 	return calendarbutton
 end
 
