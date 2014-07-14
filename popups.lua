@@ -38,7 +38,7 @@ local function show_process_info(inc_proc_offset, title_color,user_color, root_c
     if sort_order == "cpu" then
         processstats = awful.util.pread('/usr/bin/ps --sort -c,-s -eo fname,user,%cpu,%mem,pid,gid,ppid,tname,priority | /usr/bin/head -n '..proc_offset)
     elseif sort_order == "mem" then
-        processstats = awful.util.pread('/usr/bin/ps --sort -rss,-s -eo fname,user,%cpu,%mem,pid,gid,ppid,tname,priority,stat | /usr/bin/head -n '..proc_offset)
+        processstats = awful.util.pread('/usr/bin/ps --sort -rss,-s -eo fname,user,%cpu,%mem,pid,gid,ppid,tname,priority | /usr/bin/head -n '..proc_offset)
     end
 
     processstats = colorize(processstats, "COMMAND", title_color)
