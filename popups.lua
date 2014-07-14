@@ -251,7 +251,6 @@ local function get_ip( title_color, ip_color )
     str=awful.util.pread("/home/farseer/bin/show_ip")
     str=colorize(str,"LAN:", title_color)
     str=colorize(str,"EXTERNAL:", title_color)
-    str=colorize(str,"[0-9.]%+", ip_color)
     return str
 end
 
