@@ -3,7 +3,7 @@
 local naughty = require("naughty")
 local os = require("os")
 local awful = require("awful")
-local helpers =require("lain.helpers")
+local helpers =require("blingbling.helpers")
 local string = require("string")
 local superproperties = require('blingbling.superproperties')
 ---Differents popups for Awesome widgets
@@ -36,9 +36,9 @@ local function show_process_info(inc_proc_offset, title_color,user_color, root_c
     hide_process_info()
     proc_offset = save_proc_offset + inc_proc_offset
     if sort_order == "cpu" then
-        processstats = helpers.read_pipe('/usr/bin/ps --sort -c,-s -eo fname,user,%cpu,%mem,pid,gid,ppid,tname,priority | /usr/bin/head -n '..proc_offset)
+        processstats = helpers.os_capture('/usr/bin/ps --sort -c,-s -eo fname,user,%cpu,%mem,pid,gid,ppid,tname,priority | /usr/bin/head -n '..proc_offset, true)
     elseif sort_order == "mem" then
-        processstats = helpers.read_pipe('/usr/bin/ps --sort -rss,-s -eo fname,user,%cpu,%mem,pid,gid,ppid,tname,priority | /usr/bin/head -n '..proc_offset)
+        processstats = helpers.os_capture('/usr/bin/ps --sort -rss,-s -eo fname,user,%cpu,%mem,pid,gid,ppid,tname,priority | /usr/bin/head -n '..proc_offset, true)
     end
 
     processstats = colorize(processstats, "COMMAND", title_color)
@@ -108,7 +108,7 @@ end
 -- { netstat
 local netpopup = nil
 local function get_netinfo( my_title_color, my_established_color, my_listen_color)
-    str=helpers.read_pipe('netstat -np | grep -v TIME_WAIT')
+    str=helpers.os_capture('netstat -np | grep -v TIME_WAIT', true)
     str=colorize(str,"Proto", my_title_color)
     str=colorize(str,"PID/Program name", my_title_color)
     str=colorize(str,'Recv%XQ', my_title_color)
@@ -166,7 +166,7 @@ end
 -- { temperature
 local temppopup = nil
 local function get_tempinfo( cpu_color, safe_color, high_color, crit_color)
-    str=helpers.read_pipe("/home/farseer/bin/gpu_temp && sensors |grep Core|awk -F '(' '{print $1}'")
+    str=helpers.os_capture("/home/farseer/bin/gpu_temp && sensors |grep Core|awk -F '(' '{print $1}'", true)
     str=colorize(str,"Core %x", cpu_color)
     str=colorize(str,"Gpu", cpu_color)
     str=colorize(str,"high", high_color)
@@ -206,7 +206,7 @@ end
 -- { file system
 local fspopup = nil
 local function get_fsinfo( title_color, total_color, percentage_color, tmp_color)
-    str=helpers.read_pipe("/usr/bin/df -h")
+    str=helpers.os_capture("/usr/bin/df -h", true)
     str=colorize(str,"Filesystem", title_color)
     str=colorize(str,"Size", title_color)
     str=colorize(str,"Used", title_color)
@@ -248,7 +248,7 @@ end
 -- { Ip address
 local ipopup = nil
 local function get_ip( title_color, ip_color )
-    str=helpers.read_pipe("/home/farseer/bin/show_ip")
+    str=helpers.os_capture("/home/farseer/bin/show_ip", true)
     str=colorize(str,"LAN:", title_color)
     str=colorize(str,"EXTERNAL:", title_color)
     return str
@@ -282,7 +282,7 @@ end
 -- { cpu frequency
 local cpufreq = nil
 local function get_cpufreq( title_color, high_color ,low_color)
-    str=helpers.read_pipe("cat /proc/cpuinfo | grep MHz")
+    str=helpers.os_capture("cat /proc/cpuinfo | grep MHz", true)
     str=colorize(str, "cpu MHz", title_color)
     str=colorize(str, "[1-2]%d%d%d.%d%d%d", low_color)
     str=colorize(str, "[8-9]%d%d.%d%d%d", low_color)
